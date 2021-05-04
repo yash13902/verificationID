@@ -33,9 +33,27 @@ public class LoginActivity extends AppCompatActivity {
                 FirebaseAuth.getInstance().signOut();
 
             } else {
-                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                startActivity(intent);
-                finish();
+                FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
+                mUser.getIdToken(true)
+                        .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                            public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                if (task.isSuccessful()) {
+                                    String idToken = task.getResult().getToken();
+                                    Log.i("xx" , idToken);
+                                    // Send token to your backend via HTTPS
+                                    // ...
+                                    String token = idToken;
+                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                    intent.putExtra("Token", token);
+                                    startActivity(intent);
+                                    finish();
+                                    Toast.makeText(LoginActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    // Handle error -> task.getException();
+                                    Log.i("Exx" , task.getException().toString());
+                                }
+                            }
+                        });
             }
         }
         super.onStart();
@@ -128,7 +146,6 @@ public class LoginActivity extends AppCompatActivity {
                                 // ...
                                 String token = idToken;
                                 Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                                intent.putExtra("Email", email);
                                 intent.putExtra("Token", token);
                                 startActivity(intent);
                                 finish();
